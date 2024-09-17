@@ -1,0 +1,31 @@
+name: Sync 
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # launch at eveny 0:00.
+  workflow_dispatch: # launch manually.
+
+jobs:
+  sync_and_build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout skybrush-server-for-docker
+        uses: actions/checkout@v3
+      #   with:
+      #     ref: main # checkout main branch.
+
+      - name: Add upstream repository and configs
+        run: |
+            git remote add upstream https://github.com/skybrush-io/skybrush-server.git
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "actions@github.com"
+
+      - name: Fetch and merge upstream main branch
+        run: |
+          git fetch upstream
+          git merge upstream/main --allow-unrelated-histories
+
+      - name: Push changes to skybrush-server-for-docker repository
+        run: |
+          git push origin main --tag || echo "No changes to push"
